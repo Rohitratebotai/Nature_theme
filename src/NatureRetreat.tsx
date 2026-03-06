@@ -36,22 +36,61 @@ export default function NatureRetreat() {
     useEffect(() => {
         const dot = cursorRef.current;
         const ring = cursorRingRef.current;
-        if (!dot || !ring || typeof gsap === "undefined") return;
-        if (window.matchMedia("(pointer: coarse)").matches) return; // skip touch devices
+
+        if (!dot || !ring) return;
+
+        // Skip touch devices
+        if (window.matchMedia("(pointer: coarse)").matches) return;
 
         dot.style.opacity = "1";
         ring.style.opacity = "1";
 
         const move = (e: MouseEvent) => {
-            gsap.to(dot, { x: e.clientX, y: e.clientY, duration: 0.06 });
-            gsap.to(ring, { x: e.clientX, y: e.clientY, duration: 0.22, ease: "power2.out" });
+            gsap.to(dot, {
+                x: e.clientX,
+                y: e.clientY,
+                duration: 0.06
+            });
+
+            gsap.to(ring, {
+                x: e.clientX,
+                y: e.clientY,
+                duration: 0.22,
+                ease: "power2.out"
+            });
         };
+
         window.addEventListener("mousemove", move);
+
         const els = document.querySelectorAll("a, button");
-        const grow = () => gsap.to(ring, { scale: 2.4, borderColor: "#8aad6e", duration: 0.3 });
-        const shrink = () => gsap.to(ring, { scale: 1, borderColor: "rgba(138,173,110,0.55)", duration: 0.3 });
-        els.forEach((el) => { el.addEventListener("mouseenter", grow); el.addEventListener("mouseleave", shrink); });
-        return () => window.removeEventListener("mousemove", move);
+
+        const grow = () =>
+            gsap.to(ring, {
+                scale: 2.4,
+                borderColor: "#8aad6e",
+                duration: 0.3
+            });
+
+        const shrink = () =>
+            gsap.to(ring, {
+                scale: 1,
+                borderColor: "rgba(138,173,110,0.55)",
+                duration: 0.3
+            });
+
+        els.forEach((el) => {
+            el.addEventListener("mouseenter", grow);
+            el.addEventListener("mouseleave", shrink);
+        });
+
+        return () => {
+            window.removeEventListener("mousemove", move);
+
+            els.forEach((el) => {
+                el.removeEventListener("mouseenter", grow);
+                el.removeEventListener("mouseleave", shrink);
+            });
+        };
     }, []);
 
     // GSAP animations
@@ -116,7 +155,7 @@ export default function NatureRetreat() {
                 },
             });
         });
-        
+
         gsap.from(".nr-testi", { opacity: 0, y: 28, stagger: 0.2, duration: 1.0, ease: "power2.out", scrollTrigger: { trigger: "#nr-testimonials", start: "top 82%", once: true } });
         gsap.from(".nr-contact-left", { opacity: 0, x: -50, duration: 1.2, ease: "power3.out", scrollTrigger: { trigger: "#nr-contact", start: "top 80%", once: true } });
         gsap.from(".nr-contact-right", { opacity: 0, x: 50, duration: 1.2, ease: "power3.out", scrollTrigger: { trigger: "#nr-contact", start: "top 80%", once: true } });
@@ -163,8 +202,8 @@ export default function NatureRetreat() {
       `}</style>
 
             {/* cursor overlay — native cursor still visible */}
-            <div ref={cursorRef} className="nr-dot" />
-            <div ref={cursorRingRef} className="nr-ring" />
+            <div ref={cursorRef} className="cursor-dot"></div>
+            <div ref={cursorRingRef} className="cursor-ring"></div>
 
             {/* ════ NAV ════ */}
             <nav className={`fixed top-0 left-0 right-0 z-50 flex justify-between items-center px-5 md:px-14 transition-all duration-500 ${navScrolled ? "py-3 bg-stone-950/92 backdrop-blur-lg shadow-xl" : "py-5 md:py-6"}`}>
@@ -244,7 +283,7 @@ export default function NatureRetreat() {
                 </div>
 
                 {/* Booking widget — desktop only */}
-                <div className="nr-widget hidden lg:block absolute right-14 bottom-14 z-10 bg-stone-900/88 backdrop-blur-xl border border-white/[0.09] p-6 w-[270px]">
+                {/* <div className="nr-widget hidden lg:block absolute right-14 bottom-14 z-10 bg-stone-900/88 backdrop-blur-xl border border-white/[0.09] p-6 w-[270px]">
                     <p className="text-[0.58rem] tracking-[0.32em] uppercase text-green-400 mb-4">Quick Reserve</p>
                     <div className="flex flex-col gap-2.5">
                         <input type="date" className="bg-white/[0.05] border border-white/[0.09] focus:border-green-500 outline-none text-amber-50/80 px-4 py-2.5 text-sm w-full" />
@@ -257,7 +296,7 @@ export default function NatureRetreat() {
                             Check Availability
                         </button>
                     </div>
-                </div>
+                </div> */}
 
                 <div className="nr-scroll hidden md:flex absolute bottom-8 right-1/2 translate-x-1/2 z-10 flex-col items-center gap-2">
                     <span className="text-[0.52rem] tracking-[0.3em] uppercase text-amber-100/25" style={{ writingMode: "vertical-rl" }}>Scroll</span>
@@ -444,27 +483,45 @@ export default function NatureRetreat() {
                         <p key={item} className="text-[0.63rem] tracking-[0.12em] uppercase text-amber-100/35 mb-2">{item}</p>
                     ))}
                 </div>
-                <form className="nr-contact-right relative z-10 flex flex-col gap-3" onSubmit={(e) => e.preventDefault()}>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        <input placeholder="Your Name" className="bg-white/[0.07] border border-white/[0.12] focus:border-green-400 outline-none text-amber-50 placeholder:text-white/30 px-4 py-3 text-sm transition-colors" />
-                        <input type="email" placeholder="Email" className="bg-white/[0.07] border border-white/[0.12] focus:border-green-400 outline-none text-amber-50 placeholder:text-white/30 px-4 py-3 text-sm transition-colors" />
-                    </div>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        <input type="date" className="bg-white/[0.07] border border-white/[0.12] focus:border-green-400 outline-none text-amber-50/55 px-4 py-3 text-sm" />
-                        <input type="date" className="bg-white/[0.07] border border-white/[0.12] focus:border-green-400 outline-none text-amber-50/55 px-4 py-3 text-sm" />
-                    </div>
-                    <select className="bg-stone-800 border border-white/[0.12] text-amber-50/45 px-4 py-3 text-sm outline-none">
-                        <option>Select a Sanctuary</option>
-                        {rooms.map((r) => <option key={r.id}>{r.name}</option>)}
-                    </select>
-                    <select className="bg-stone-800 border border-white/[0.12] text-amber-50/45 px-4 py-3 text-sm outline-none">
-                        <option>Number of Guests</option>
-                        {["1 Guest", "2 Guests", "3–4 Guests", "Group (5+)"].map((g) => <option key={g}>{g}</option>)}
-                    </select>
-                    <button type="submit" className="bg-green-500 hover:bg-amber-500 text-white text-[0.65rem] tracking-[0.2em] uppercase font-medium py-4 border-none cursor-pointer transition-colors">
-                        Request Reservation
-                    </button>
-                </form>
+                <div className="nr-contact-right relative z-10 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    {[
+                        {
+                            title: "Nature Immersion",
+                            text: "Wake up to mountain air, forest silence and breathtaking sunrise views."
+                        },
+                        {
+                            title: "Luxury Comfort",
+                            text: "Beautifully crafted rooms designed to blend modern comfort with nature."
+                        },
+                        {
+                            title: "Guided Experiences",
+                            text: "Explore trails, waterfalls and local culture with curated experiences."
+                        },
+                        {
+                            title: "Mindful Retreat",
+                            text: "Disconnect from the noise and reconnect with peace and simplicity."
+                        }
+                    ].map((item) => (
+                        <div
+                            key={item.title}
+                            className="bg-white/[0.05] border border-white/[0.12] p-5 backdrop-blur-sm hover:bg-white/[0.08] transition-colors"
+                        >
+                            <h4 className="text-amber-50 text-sm tracking-wide mb-2">
+                                {item.title}
+                            </h4>
+                            <p className="text-amber-200/60 text-sm leading-relaxed">
+                                {item.text}
+                            </p>
+                        </div>
+                    ))}
+
+                    <a
+                        href={`mailto:${siteInfo.email}`}
+                        className="col-span-full bg-green-500 hover:bg-amber-500 text-white text-[0.65rem] tracking-[0.2em] uppercase font-medium py-4 text-center transition-colors"
+                    >
+                        Contact Our Team
+                    </a>
+                </div>
             </section>
 
             {/* ════ FOOTER ════ */}
